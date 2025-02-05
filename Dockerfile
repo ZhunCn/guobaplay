@@ -6,7 +6,7 @@ RUN apt-get update
 RUN apt-get install -yq software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get install -yq \
-    curl g++ make autoconf automake libtool m4 libopus-dev ffmpeg  python3.8
+    curl g++ make cmake autoconf automake libtool m4 libopus-dev ffmpeg wget python3.8
 
 
 # very important lib thing
@@ -19,7 +19,12 @@ ENV PATH=$PATH:/usr/local/bin/python
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # rust
-run apt install -yq rustc
+RUN mkdir -m777 /opt/rust /opt/cargo
+ENV RUSTUP_HOME=/opt/rust CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:$PATH
+RUN wget --https-only --secure-protocol=TLSv1_2 -O- https://sh.rustup.rs | sh /dev/stdin -y
+RUN rustup target add x86_64-unknown-linux-gnu
+RUN printf '#!/bin/sh\nexport CARGO_HOME=/opt/cargo\nexec /bin/sh "$@"\n' >/usr/local/bin/sh
+RUN chmod +x /usr/local/bin/sh
 
 # crusty rust
 WORKDIR /workspace
